@@ -10,6 +10,15 @@ public class HostsBlockListsLoader extends ListLoader<String> {
 
     private static final String[] BLOCK_PREFIXES = { "0.0.0.0 ", "127.0.0.1 "};
 
+    public static boolean isBlock(String line) {
+        for (String blockPrefix : BLOCK_PREFIXES) {
+            if (line.startsWith(blockPrefix)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     protected Stream<String> lineParser(String urlList) {
         return Pattern.compile("\\r?\\n").splitAsStream(urlList)
@@ -17,7 +26,7 @@ public class HostsBlockListsLoader extends ListLoader<String> {
                 .map(String::strip)
                 .filter(str -> !str.isBlank())
                 .filter(line -> !line.startsWith("#"))
-                .filter(line -> line.startsWith(BLOCK_PREFIXES[0]) || line.startsWith(BLOCK_PREFIXES[1]))
+                .filter(HostsBlockListsLoader::isBlock)
                 .map(this::removeIp)
                 .map(String::toLowerCase);
     }

@@ -18,7 +18,7 @@ public class HostsOverrideListsLoader extends ListLoader<HostsOverrideListsLoade
                 .map(String::strip)
                 .filter(str -> !str.isBlank())
                 .filter(line -> !line.startsWith("#"))
-                .filter(line -> !line.startsWith("0.0.0.0 "))
+                .filter(line -> !HostsBlockListsLoader.isBlock(line))
                 .map(this::mapLine);
     }
 
