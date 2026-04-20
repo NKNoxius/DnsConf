@@ -13,6 +13,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.StructuredTaskScope;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -34,10 +35,13 @@ public abstract class ListLoader<T> {
     public List<T> fetchWebsites(List<String> urls) {
         @Cleanup var scope = StructuredTaskScope.open();
         List<StructuredTaskScope.Subtask<String>> requests = new ArrayList<>();
+
         urls.stream()
                 .map(url -> scope.fork(() -> fetchList(url)))
                 .forEach(requests::add);
+
         scope.join();
+
         return requests.stream()
                 .map(StructuredTaskScope.Subtask::get)
                 .map(String::stripIndent)
@@ -49,6 +53,7 @@ public abstract class ListLoader<T> {
                 .filter(filterRelatedLines())
                 .distinct()
                 .map(this::toObject)
+                .filter(Objects::nonNull) // ✅ ВОТ ЭТО КРИТИЧЕСКИЙ ФИКС
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 
