@@ -17,14 +17,25 @@ public class HostsOverrideListsLoader extends ListLoader<HostsOverrideListsLoade
 
     @Override
     protected Predicate<String> filterRelatedLines() {
-        return line -> !HostsBlockListsLoader.isBlock(line);
+        return line -> line != null
+                && !line.isBlank()
+                && !line.startsWith("#")
+                && !HostsBlockListsLoader.isBlock(line);
     }
 
     @Override
     protected BypassRoute toObject(String line) {
-        int delimiter = line.indexOf(" ");
-        String ip = line.substring(0, delimiter++);
-        String website = removeWWW(line.substring(delimiter).strip());
+        if (line == null) return null;
+
+        line = line.trim();
+        if (line.isEmpty() || line.startsWith("#")) return null;
+
+        String[] parts = line.split("\\s+");
+        if (parts.length < 2) return null;
+
+        String ip = parts[0];
+        String website = removeWWW(parts[1]);
+
         return new BypassRoute(ip, website);
     }
 
